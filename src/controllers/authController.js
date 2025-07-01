@@ -69,7 +69,6 @@ exports.login = async (req, res) => {
 
         // Create token
         const token = createToken(user._id);
-
         res.json({
             success: true,
             token,
@@ -77,7 +76,10 @@ exports.login = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                phoneNumber: user.phoneNumber,
+                isEmailVerified: user.isEmailVerified,
+                isPhoneVerified: user.isPhoneVerified,
             }
         });
     } catch (error) {
@@ -418,5 +420,29 @@ exports.updateProfile = async (req, res) => {
             success: false,
             message: error.message
         });
+    }
+};
+
+// Elevate user to admin (setup only, protected by secret)
+exports.elevateToAdmin = async (req, res) => {
+    try {
+        const { email, secret } = req.body;
+        if (!email || !secret) {
+            return res.status(400).json({ success: false, message: 'Email and secret are required.' });
+        }
+        if (secret !== process.env.SETUP_ADMIN_SECRET) {
+            return res.status(403).json({ success: false, message: 'Invalid secret.' });
+        }
+        const user = await User.findOneAndUpdate(
+            { email },
+            { role: 'admin' },
+            { new: true }
+        );
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+        res.json({ success: true, message: 'User elevated to admin.', user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 }; 

@@ -9,7 +9,8 @@ const {
     getCurrentUser,
     updateProfile,
     login,
-    register
+    register,
+    elevateToAdmin
 } = require('../controllers/authController');
 
 // Public routes
@@ -17,6 +18,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/generate-otp', generateOTP);
 router.post('/verify-otp', verifyOTP);
+router.post('/elevate-to-admin', elevateToAdmin);
 
 // Protected routes
 router.use(protect);
