@@ -12,9 +12,10 @@ const openai = new OpenAI({
 // Create a new moodboard
 exports.createMoodboard = async (req, res) => {
     try {
-        const { client, name, description, theme, sections } = req.body;
+        const { client, project, name, description, theme, sections } = req.body;
         const moodboard = new Moodboard({
             client,
+            project,
             name,
             description,
             theme,

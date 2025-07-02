@@ -24,6 +24,24 @@ exports.createProject = async (req, res) => {
     }
 };
 
+// Get all projects
+exports.getProjects = async (req, res) => {
+    try {
+        const projects = await Project.find()
+            .populate('client', 'name email phone')
+            .populate('lead', 'name phone')
+            .sort('-createdAt');
+        
+        res.status(200).json({ 
+            success: true, 
+            count: projects.length,
+            data: projects 
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 // Get project by ID
 exports.getProject = async (req, res) => {
     try {

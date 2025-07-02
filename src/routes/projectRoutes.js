@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
     createProject,
+    getProjects,
     getProject,
     addZone,
     addTask,
@@ -14,6 +15,9 @@ const {
 
 // Create new project
 router.post('/', protect, authorize('admin', 'sales'), createProject);
+
+// Get all projects
+router.get('/', protect, getProjects);
 
 // Get project details
 router.get('/:id', protect, getProject);
