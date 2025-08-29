@@ -12,6 +12,7 @@ const estimateRoutes = require('./routes/estimateRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const clientPortalRoutes = require('./routes/clientPortalRoutes');
 const moodboardRoutes = require('./routes/moodboardRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/estimates', estimateRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/client-portal', clientPortalRoutes);
 app.use('/api/moodboards', moodboardRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

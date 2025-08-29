@@ -446,3 +446,39 @@ exports.elevateToAdmin = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 }; 
+
+// Google OAuth callback handler
+exports.googleAuthCallback = async (req, res) => {
+    try {
+        const user = req.user;
+        
+        // Generate JWT token
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Redirect to frontend with token
+        const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }))}`;
+
+        res.redirect(redirectUrl);
+    } catch (error) {
+        console.error('Google auth callback error:', error);
+        const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/error?message=${encodeURIComponent('Authentication failed')}`;
+        res.redirect(errorUrl);
+    }
+}; 

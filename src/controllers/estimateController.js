@@ -2,8 +2,6 @@ const Estimate = require('../models/Estimate');
 const Lead = require('../models/Lead');
 const OpenAI = require('openai');
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -310,12 +308,15 @@ exports.generatePDF = async (req, res) => {
             });
         }
 
-        // Create PDF
-        const doc = new PDFDocument();
-        const pdfPath = path.join(__dirname, `../temp/${estimateId}.pdf`);
+        // Set response headers for PDF
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="estimate-${estimateId}.pdf"`);
 
-        // Pipe PDF to file
-        doc.pipe(fs.createWriteStream(pdfPath));
+        // Create PDF and pipe directly to response
+        const doc = new PDFDocument();
+
+        // Pipe PDF directly to response
+        doc.pipe(res);
 
         // Add content to PDF
         doc.fontSize(25).text('Interior Design Estimate', { align: 'center' });
@@ -349,28 +350,33 @@ exports.generatePDF = async (req, res) => {
         });
         doc.moveDown();
 
-        // AI Suggestions
-        doc.fontSize(16).text('Design Tips');
-        estimate.aiSuggestions.designTips.forEach(tip => {
-            doc.fontSize(12).text(`• ${tip}`);
-        });
+        // AI Suggestions (only if they exist)
+        if (estimate.aiSuggestions && estimate.aiSuggestions.designTips && estimate.aiSuggestions.designTips.length > 0) {
+            doc.fontSize(16).text('Design Tips');
+            estimate.aiSuggestions.designTips.forEach(tip => {
+                doc.fontSize(12).text(`• ${tip}`);
+            });
+            doc.moveDown();
+        }
+
+        // Add company details
+        doc.fontSize(16).text('Company Details');
+        doc.fontSize(12).text('DesignFlow Studio');
+        doc.text('Interior Design & Consultation');
+        doc.text('Contact: +91-9876543210');
+        doc.text('Email: info@designflowstudio.com');
         doc.moveDown();
+
+        // Add terms and conditions
+        doc.fontSize(14).text('Terms & Conditions');
+        doc.fontSize(10).text('• This estimate is valid for 30 days');
+        doc.text('• Payment schedule must be followed as per milestones');
+        doc.text('• Any changes to scope will require a revised estimate');
+        doc.text('• GST is applicable as per government regulations');
 
         // Finalize PDF
         doc.end();
 
-        // Send PDF file
-        res.download(pdfPath, `estimate-${estimateId}.pdf`, (err) => {
-            if (err) {
-                console.error('PDF download error:', err);
-            }
-            // Clean up temp file
-            fs.unlink(pdfPath, (unlinkErr) => {
-                if (unlinkErr) {
-                    console.error('PDF cleanup error:', unlinkErr);
-                }
-            });
-        });
     } catch (error) {
         console.error('Generate PDF error:', error);
         res.status(500).json({

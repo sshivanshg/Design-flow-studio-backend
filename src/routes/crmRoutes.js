@@ -4,31 +4,57 @@ const { protect, authorize } = require('../middleware/auth');
 const {
     createLead,
     getLeads,
+    updateLead,
+    deleteLead,
     updateLeadStage,
     addNote,
-    updateLead,
-    deleteLead
+    getLeadsKanban,
+    getLeadsList,
+    getLeadDetail,
+    addInteraction,
+    bulkAssign,
+    bulkMoveStage,
+    bulkTag,
+    bulkWhatsApp,
+    exportLeads,
+    importLeads,
+    getLeadStats
 } = require('../controllers/crmController');
 
-// All routes are protected and require authentication
+// All CRM routes require authentication
 router.use(protect);
 
-// Create a new lead
+// Basic CRUD operations
 router.post('/', authorize('admin', 'sales'), createLead);
-
-// Get all leads with filtering
 router.get('/', getLeads);
+router.put('/:leadId', authorize('admin', 'sales'), updateLead);
+router.delete('/:leadId', authorize('admin'), deleteLead);
 
-// Update lead stage (for drag-and-drop)
+// Lead stage management
 router.patch('/:leadId/stage', authorize('admin', 'sales'), updateLeadStage);
 
-// Add note to lead
+// Notes
 router.post('/:leadId/notes', authorize('admin', 'sales'), addNote);
 
-// Update lead details
-router.put('/:leadId', authorize('admin', 'sales'), updateLead);
+// Advanced views
+router.get('/kanban', getLeadsKanban);
+router.get('/list', getLeadsList);
 
-// Delete lead
-router.delete('/:leadId', authorize('admin'), deleteLead);
+// Single lead detail
+router.get('/:leadId/detail', getLeadDetail);
+router.post('/:leadId/interactions', authorize('admin', 'sales'), addInteraction);
+
+// Bulk operations
+router.post('/bulk-assign', authorize('admin', 'sales'), bulkAssign);
+router.post('/bulk-move-stage', authorize('admin', 'sales'), bulkMoveStage);
+router.post('/bulk-tag', authorize('admin', 'sales'), bulkTag);
+router.post('/bulk-whatsapp', authorize('admin', 'sales'), bulkWhatsApp);
+
+// Import/Export
+router.get('/export', exportLeads);
+router.post('/import', authorize('admin', 'sales'), importLeads);
+
+// Statistics
+router.get('/stats', getLeadStats);
 
 module.exports = router; 

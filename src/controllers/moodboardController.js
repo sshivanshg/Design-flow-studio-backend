@@ -28,6 +28,7 @@ exports.createMoodboard = async (req, res) => {
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
     }
+    
 };
 
 // Upload image to a section
